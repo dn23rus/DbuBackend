@@ -11,8 +11,6 @@ class UserResource implements ServiceLocatorAwareInterface, UserResourceInterfac
 {
     protected $serviceLocator;
 
-    protected $userModel;
-
     /**
      * Set service locator
      *
@@ -36,49 +34,47 @@ class UserResource implements ServiceLocatorAwareInterface, UserResourceInterfac
     }
 
     /**
-     * Load data
+     * Returns stored password hash for given login
      *
-     * @param User $user user
-     * @return \DbuBackend\Model\UserResource
+     * @param string $login login
+     * @return string
+     * @throws \Exception
      */
-    public function load(User $user)
+    public function getPasswordHash($login)
     {
+        /* @var $app \Zend\Mvc\Application */
         $cnf = $this->getServiceLocator()->get('Application')->getConfig();
         $cnf = isset($cnf[\DbuBackend\Module::BACKEND_ROOT_CONFIG_NAME])
-            ? $cnf[\DbuBackend\Module::BACKEND_ROOT_CONFIG_NAME]
-            : array();
-        if (isset($cnf['users'])) {
+            ? $cnf[\DbuBackend\Module::BACKEND_ROOT_CONFIG_NAME] : array();
+
+        if (isset($cnf['users']) && isset($cnf['users'][$login])) {
             // load from local file system (config/autoload/local.php)
-            if (isset($cnf['users'][$user->getLogin()])) {
-                $cnf = $cnf['users'][$user->getLogin()];
-                if (!isset($cnf['password'])) {
-                    //todo throw exception
-                }
-                if (isset($cnf['hashed']) && !$cnf['hashed']) {
-                    $user->create($cnf['password']);
-                } else {
-                    $user->setPasswordHash($cnf['password']);
-                }
-            } else {
-                $this->loadFromDb($user);
+            $cnf = $cnf['users'][$login];
+            if (empty($cnf['password'])) {
+                //todo implement throw exception
+                throw new \Exception('');
             }
-        } else {
-            $this->loadFromDb($user);
+            if (isset($cnf['hashed']) && !$cnf['hashed']) {
+                /* @var $user \DbuBackend\Model\User */
+                // used user model for create password hash
+                $user = $this->getServiceLocator()->get('DbuBackend\Model\User');
+                $user->create($cnf['password']);
+                return $user->getPasswordHash();
+            }
+            return $cnf['password'];
         }
-        return $this;
+        return $this->getHashFromDb($login);
     }
 
     /**
-     * Load data from db
+     * Returns password hash from db
      *
-     * @param User $user user
-     * @return \DbuBackend\Model\UserResource
+     * @param string $login login
+     * @return string
      */
-    public function loadFromDb(User $user)
+    public function getHashFromDb($login)
     {
-        // @todo implement loading from db
-        $user->setPasswordHash('');
-        return $this;
+        //@TODO implement retrieving password hash from db
+        return '';
     }
-
 }

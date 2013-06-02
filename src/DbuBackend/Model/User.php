@@ -6,6 +6,9 @@ use DbuBackend\Model\UserResourceInterface;
 
 class User
 {
+    /**
+     * @var \DbuBackend\Model\UserResourceInterface
+     */
     protected $resource;
 
     /**
@@ -23,11 +26,6 @@ class User
      */
     protected $crypt;
 
-    /**
-     * Constructor
-     *
-     * @return void
-     */
     public function __construct(\Zend\Crypt\Password\PasswordInterface $crypt)
     {
         $this->crypt = $crypt;
@@ -39,6 +37,9 @@ class User
         return $this;
     }
 
+    /**
+     * @return \DbuBackend\Model\UserResourceInterface
+     */
     public function getResource()
     {
         if (null === $this->resource) {
@@ -92,7 +93,7 @@ class User
     public function getPasswordHash()
     {
         if (null === $this->passwordHash) {
-            $this->getResource()->load($this);
+            $this->getResource()->getPasswordHash($this->getLogin());
         }
         return $this->passwordHash;
     }
