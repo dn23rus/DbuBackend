@@ -1,0 +1,17 @@
+{
+    "name": "ZF2 Backend Module",
+    "description": "zf2 backend module",
+    "require": {
+        "php": ">=5.3.3",
+        "zendframework/zendframework": "2.*"
+    },
+    "autoload": {
+        "psr-0": {
+            "DbuBackend\\": "src/",
+            "DbuBackendTest\\": "test/"
+        },
+        "classmap": [
+            "./"
+        ]
+    }
+}
