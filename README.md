@@ -2,7 +2,7 @@ DbuBackend module
 
 Insert in your config/autoload/local.php
 
-    'dbu-backend' => array(
+    \DbuBackend\Module::BACKEND_ROOT_CONFIG_NAME => array(
         'users' => array(
             'admin' => array(
                 'login'     => 'admin',
