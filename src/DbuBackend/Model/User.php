@@ -2,7 +2,9 @@
 
 namespace DbuBackend\Model;
 
+use DbuBackend\Model\Exception;
 use DbuBackend\Model\UserResourceInterface;
+use Zend\Crypt\Password\PasswordInterface;
 
 class User
 {
@@ -26,11 +28,22 @@ class User
      */
     protected $crypt;
 
-    public function __construct(\Zend\Crypt\Password\PasswordInterface $crypt)
+    /**
+     * Constructor
+     *
+     * @param PasswordInterface $crypt crypt
+     */
+    public function __construct(PasswordInterface $crypt)
     {
         $this->crypt = $crypt;
     }
 
+    /**
+     * Set resource instance
+     *
+     * @param UserResourceInterface $resource resource instance
+     * @return \DbuBackend\Model\User
+     */
     public function setResource(UserResourceInterface $resource)
     {
         $this->resource = $resource;
@@ -38,12 +51,15 @@ class User
     }
 
     /**
-     * @return \DbuBackend\Model\UserResourceInterface
+     * Get resource instance
+     *
+     * @return UserResourceInterface
+     * @throws Exception\RuntimeException
      */
     public function getResource()
     {
         if (null === $this->resource) {
-            // @todo throw exception
+            throw new Exception\RuntimeException(sprintf('Require set resource before call %s', __METHOD__));
         }
         return $this->resource;
     }
@@ -61,14 +77,15 @@ class User
     }
 
     /**
-     * Return login
+     * Get login
      *
      * @return string
+     * @throws Exception\RuntimeException
      */
     public function getLogin()
     {
         if (null === $this->login) {
-            //@todo throw exception
+            throw new Exception\RuntimeException(sprintf('Require set login before call %s', __METHOD__));
         }
         return $this->login;
     }
@@ -93,7 +110,7 @@ class User
     public function getPasswordHash()
     {
         if (null === $this->passwordHash) {
-            $this->getResource()->getPasswordHash($this->getLogin());
+            $this->passwordHash = $this->getResource()->getPasswordHash($this->getLogin());
         }
         return $this->passwordHash;
     }
@@ -121,7 +138,9 @@ class User
     }
 
     /**
-     * @return \Zend\Crypt\Password\PasswordInterface
+     * Get crypt
+     *
+     * @return PasswordInterface
      */
     public function getCrypt()
     {

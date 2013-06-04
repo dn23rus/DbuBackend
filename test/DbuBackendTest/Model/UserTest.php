@@ -2,6 +2,7 @@
 
 namespace DbuBackendTest\Model;
 
+use DbuBackendTest\Bootstrap;
 use PHPUnit_Framework_TestCase;
 
 class UserTest extends PHPUnit_Framework_TestCase
@@ -12,9 +13,8 @@ class UserTest extends PHPUnit_Framework_TestCase
             'pass' => 'admin123',
             'hash' => '$2a$06$BMGcFWwnmS//gl3gUybfl.IvtUwCYIXeO23WQ2nlgcBdvtGI.wLBq',
         );
-        $sm = \DbuBackendTest\Bootstrap::getServiceManager();
         /* @var $user \DbuBackend\Model\User */
-        $user = $sm->get('DbuBackend\Model\User');
+        $user = Bootstrap::getServiceManager()->get('DbuBackend\Model\User');
         $user->setPasswordHash($data['hash']);
 
         $this->assertTrue($user->verify($data['pass']));
