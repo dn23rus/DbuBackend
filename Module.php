@@ -63,20 +63,23 @@ class Module implements
         return array(
             'factories' => array(
                 'DbuBackend\Model\Session' => function($sm) {
-                    $session = new Session($sm->get('DbuBackend\Model\User'));
-                    return $session;
+                    return new Session($sm->get('DbuBackend\Model\User'));
                 },
-                'DbuBackend\Model\User' => function($sm) use ($cnfKey) {
+                'DbuBackend\Model\User' => function($sm) {
                     $user = new User($sm->get('Crypt'));
                     $user->setResource($sm->get('DbuBackend\Model\UserResource'));
                     return $user;
                 },
-                'DbuBackend\Model\UserResource' => function($sm) {
-                    return new UserResource();
+                'DbuBackend\Model\UserResource' => function($sm) use ($cnfKey) {
+                    $cnf = $sm->get('Application')->getConfig();
+                    $collection = isset($cnf[$cnfKey]['users']) ? $cnf[$cnfKey]['users'] : array();
+                    $userResource = new UserResource();
+                    $userResource->setUserCollection($collection);
+                    return $userResource;
                 },
                 'Crypt' => function($sm) use ($cnfKey) {
-                    $config = $sm->get('Application')->getConfig();
-                    return new Bcrypt($config[$cnfKey]['options']);
+                    $cnf = $sm->get('Application')->getConfig();
+                    return new Bcrypt($cnf[$cnfKey]['options']);
                 },
             ),
         );

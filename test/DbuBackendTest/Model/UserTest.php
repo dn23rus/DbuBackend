@@ -2,10 +2,9 @@
 
 namespace DbuBackendTest\Model;
 
-use DbuBackendTest\Bootstrap;
-use PHPUnit_Framework_TestCase;
+use DbuBackendTest\DbuTestCase;
 
-class UserTest extends PHPUnit_Framework_TestCase
+class UserTest extends DbuTestCase
 {
     public function testUserLoginVerifying()
     {
@@ -14,7 +13,7 @@ class UserTest extends PHPUnit_Framework_TestCase
             'hash' => '$2a$06$BMGcFWwnmS//gl3gUybfl.IvtUwCYIXeO23WQ2nlgcBdvtGI.wLBq',
         );
         /* @var $user \DbuBackend\Model\User */
-        $user = Bootstrap::getServiceManager()->get('DbuBackend\Model\User');
+        $user = $this->sm->get('DbuBackend\Model\User');
         $user->setPasswordHash($data['hash']);
 
         $this->assertTrue($user->verify($data['pass']));
