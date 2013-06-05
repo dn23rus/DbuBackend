@@ -66,7 +66,8 @@ class Module implements
                     return new Session($sm->get('DbuBackend\Model\User'));
                 },
                 'DbuBackend\Model\User' => function($sm) {
-                    $user = new User($sm->get('Crypt'));
+                    $user = new User();
+                    $user->setCrypt($sm->get('Crypt'));
                     $user->setResource($sm->get('DbuBackend\Model\UserResource'));
                     return $user;
                 },

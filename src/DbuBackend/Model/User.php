@@ -29,16 +29,6 @@ class User
     protected $crypt;
 
     /**
-     * Constructor
-     *
-     * @param PasswordInterface $crypt crypt
-     */
-    public function __construct(PasswordInterface $crypt)
-    {
-        $this->crypt = $crypt;
-    }
-
-    /**
      * Set resource instance
      *
      * @param UserResourceInterface $resource resource instance
@@ -62,6 +52,31 @@ class User
             throw new Exception\RuntimeException(sprintf('Require set resource before call %s', __METHOD__));
         }
         return $this->resource;
+    }
+
+    /**
+     * Set crypt
+     *
+     * @param PasswordInterface $crypt crypt
+     * @return \DbuBackend\Model\User
+     */
+    public function setCrypt(PasswordInterface $crypt)
+    {
+        $this->crypt = $crypt;
+        return $this;
+    }
+
+    /**
+     * Get crypt
+     *
+     * @return PasswordInterface
+     */
+    public function getCrypt()
+    {
+        if (null === $this->crypt) {
+            throw new Exception\RuntimeException(sprintf('Require set crypt before call %s', __METHOD__));
+        }
+        return $this->crypt;
     }
 
     /**
@@ -135,15 +150,5 @@ class User
     public function create($password)
     {
         return $this->setPasswordHash($this->getCrypt()->create($password));
-    }
-
-    /**
-     * Get crypt
-     *
-     * @return PasswordInterface
-     */
-    public function getCrypt()
-    {
-        return $this->crypt;
     }
 }
