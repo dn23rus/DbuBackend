@@ -71,16 +71,13 @@ class Module implements
                     $user->setResource($sm->get('DbuBackend\Model\UserResource'));
                     return $user;
                 },
-                'DbuBackend\Model\UserResource' => function($sm) use ($cnfKey) {
-                    $cnf = $sm->get('Application')->getConfig();
-                    $collection = isset($cnf[$cnfKey]['users']) ? $cnf[$cnfKey]['users'] : array();
-                    $userResource = new UserResource();
-                    $userResource->setUserCollection($collection);
-                    return $userResource;
+                'DbuBackend\Model\UserResource' => function($sm) {
+                    return new UserResource();
                 },
                 'Crypt' => function($sm) use ($cnfKey) {
                     $cnf = $sm->get('Application')->getConfig();
-                    return new Bcrypt($cnf[$cnfKey]['options']);
+                    $cnf = isset($cnf[$cnfKey]['options']) ? $cnf[$cnfKey]['options'] : array();
+                    return new Bcrypt($cnf);
                 },
             ),
         );

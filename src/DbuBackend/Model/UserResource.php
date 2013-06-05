@@ -2,7 +2,6 @@
 
 namespace DbuBackend\Model;
 
-use DbuBackend\Model\User;
 use DbuBackend\Module;
 use DbuBackend\Model\UserResourceInterface;
 use Zend\ServiceManager\ServiceLocatorAwareInterface;
@@ -18,7 +17,7 @@ class UserResource implements ServiceLocatorAwareInterface, UserResourceInterfac
     /**
      * @var array
      */
-    protected $userCollection = array();
+    protected $userCollection;
 
     /**
      * Set service locator
@@ -61,6 +60,12 @@ class UserResource implements ServiceLocatorAwareInterface, UserResourceInterfac
      */
     public function getUserCollection()
     {
+        if (null === $this->userCollection) {
+            $cnf = $this->getServiceLocator()->get('Application')->getConfig();
+            $this->userCollection = isset($cnf[Module::BACKEND_ROOT_CONFIG_NAME]['users'])
+                ? $cnf[Module::BACKEND_ROOT_CONFIG_NAME]['users']
+                : array();
+        }
         return $this->userCollection;
     }
 
@@ -68,13 +73,13 @@ class UserResource implements ServiceLocatorAwareInterface, UserResourceInterfac
      * Returns stored password hash for given login
      *
      * @param string $login login
-     * @return string
+     * @return string|null
      * @throws \Exception
      */
     public function getPasswordHash($login)
     {
         $users = $this->getUserCollection();
-        // first check config/autoload/local.php
+        $pass  = null;
         if (isset($users[$login])) {
             $data = $users[$login];
             if (empty($data['password'])) {
@@ -83,24 +88,12 @@ class UserResource implements ServiceLocatorAwareInterface, UserResourceInterfac
             }
             if (isset($data['hashed']) && !$data['hashed']) {
                 // used user model for create password hash
-                return $this->getServiceLocator()->get('DbuBackend\Model\User')->getCrypt()->create($data['password']);
+                // @todo remove using service locator
+                $pass = $this->getServiceLocator()->get('DbuBackend\Model\User')->getCrypt()->create($data['password']);
             }
             // assume that password is hashed
-            return $data['password'];
+            $pass = $data['password'];
         }
-
-        return $this->getHashFromDb($login);
-    }
-
-    /**
-     * Returns password hash from db
-     *
-     * @param string $login login
-     * @return string
-     */
-    public function getHashFromDb($login)
-    {
-        //@TODO implement retrieving password hash from db
-        return '';
+        return $pass;
     }
 }

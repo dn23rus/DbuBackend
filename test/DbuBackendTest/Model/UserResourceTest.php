@@ -7,31 +7,43 @@ use DbuBackendTest\DbuTestCase;
 
 class UserResourceTest extends DbuTestCase
 {
+    protected $login = 'admin';
+    protected $pass  = 'admin123';
+    protected $hash  = '$2a$06$BMGcFWwnmS//gl3gUybfl.IvtUwCYIXeO23WQ2nlgcBdvtGI.wLBq';
+
     public function testRetrieveNotHashedPasswordFromUserModel()
     {
-        $data = array(
+        $opts = $this->sm->get('Application')->getConfig();
+        $opts = isset($opts[Module::BACKEND_ROOT_CONFIG_NAME]['options'])
+            ? $opts[Module::BACKEND_ROOT_CONFIG_NAME]['options']
+            : array();
+
+        $collection = array(
             'admin' => array(
                 'password' => 'admin123',
                 'hashed' => false,
             )
         );
-        $cnf = $this->sm->get('Application')->getConfig();
-        $cnf = $cnf[Module::BACKEND_ROOT_CONFIG_NAME]['options'];
-        $cryptMock = $this->getMock('Zend\Crypt\Password\Bcrypt', array(), array($cnf));
-//        $userMock = $this->getMock('DbuBackend\Model\User', array(), array($cryptMock));
 
-        $this->sm->setAllowOverride(true)
+        $userMock  = $this->getMock('DbuBackend\Model\User');
+        $cryptMock = $this->getMock('Zend\Crypt\Password\Bcrypt', array(), array($opts));
+
+        $this->sm->setAllowOverride(true) //@todo resolve problem with setting services
+            ->setService('DbuBackend\Model\User', $userMock)
             ->setService('Crypt', $cryptMock);
+
+        $userMock->expects($this->once())
+            ->method('getCrypt')
+            ->will($this->returnValue($cryptMock));
 
         $cryptMock->expects($this->once())
             ->method('create')
-            ->with($data['admin']['password']);
+            ->with($this->pass)
+            ->will($this->returnValue($this->hash));
 
-        $user = $this->sm->get('DbuBackend\Model\User');
+        $resource = $this->sm->get('DbuBackend\Model\UserResource');
+        $resource->setUserCollection($collection);
 
-
-        $model = $this->sm->get('DbuBackend\Model\UserResource');
-        $model->setUserCollection($data);
-        $model->getPasswordHash('admin');
+        $this->assertEquals($this->hash, $resource->getPasswordHash($this->login));
     }
 }
