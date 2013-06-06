@@ -11,3 +11,5 @@ Insert in your config/autoload/local.php
             )
         )
     ),
+
+Version control follows [Semantic Versioning](http://semver.org/)
