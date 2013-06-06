@@ -10,11 +10,31 @@ return array(
     ),
     'controllers' => array(
         'invokables' => array(
-            'DbuBackend\Controller\Console' => 'DbuBackend\Controller\ConsoleController'
+            'DbuBackend\Controller\Console' => 'DbuBackend\Controller\ConsoleController',
+            'DbuBackend\Controller\Login'   => 'DbuBackend\Controller\LoginController',
         ),
     ),
-    'routers' => array(
-
+    'router' => array(
+        'routes' => array(
+            'login' => array(
+                'type' => 'segment',
+                'options' => array(
+                    'route' => '/login[/:action]',
+                    'constraints' => array(
+                        'action' => '[a-zA-Z][a-zA-Z0-9_-]*',
+                    ),
+                    'defaults' => array(
+                        'controller' => 'DbuBackend\Controller\Login',
+                        'action'     => 'index',
+                    ),
+                ),
+            ),
+        ),
+    ),
+    'view_manager' => array(
+        'template_path_stack' => array(
+            'login' => __DIR__ . '/../view/default',
+        ),
     ),
     'console' => array(
         'router' => array(
@@ -28,6 +48,19 @@ return array(
                         ),
                     ),
                 ),
+            ),
+        ),
+    ),
+    'controller_plugins' => array(
+        'invokables' => array(
+            'DbuBackend\Controller\Plugin\Auth' => 'DbuBackend\Controller\Plugin\Auth',
+        ),
+    ),
+    'session' => array(
+        'config' => array(
+            'options' => array(
+                'name'                  => 'backend',
+                'remember_me_seconds'   => 86400,
             ),
         ),
     ),

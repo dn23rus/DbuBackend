@@ -15,17 +15,15 @@ class LoginController extends AbstractActionController
     public function indexAction()
     {
         return new ViewModel(array(
-            'content' => 'Login controller index action'
+            'url' => $this->url()->fromRoute('login', array('action' => 'post')),
         ));
     }
 
-    public function loginAction()
+    /**
+     * Post action
+     */
+    public function postAction()
     {
-
-    }
-
-    public function loginPostAction()
-    {
-
+        $this->redirect()->toRoute('login');
     }
 }

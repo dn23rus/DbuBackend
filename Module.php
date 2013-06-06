@@ -7,49 +7,79 @@ use DbuBackend\Model\User;
 use DbuBackend\Model\UserResource;
 use Zend\Console\Adapter\AdapterInterface;
 use Zend\Crypt\Password\Bcrypt;
+use Zend\EventManager\EventInterface;
 use Zend\ModuleManager\Feature\AutoloaderProviderInterface;
+use Zend\ModuleManager\Feature\BootstrapListenerInterface;
 use Zend\ModuleManager\Feature\ConfigProviderInterface;
 use Zend\ModuleManager\Feature\ConsoleBannerProviderInterface;
 use Zend\ModuleManager\Feature\ConsoleUsageProviderInterface;
 use Zend\ModuleManager\Feature\ServiceProviderInterface;
+use Zend\Mvc\MvcEvent;
+use Zend\ServiceManager\ServiceManager;
+use Zend\Session\Container as SessionContainer;
+use Zend\Session\SessionManager;
 
 
 class Module implements
     AutoloaderProviderInterface,
+    BootstrapListenerInterface,
     ConfigProviderInterface,
     ConsoleBannerProviderInterface,
     ConsoleUsageProviderInterface,
     ServiceProviderInterface
 {
+    /**
+     * Module specific config key
+     */
     const BACKEND_ROOT_CONFIG_NAME = 'dbu-core';
 
     /**
-     * Configs
+     * Listen to the bootstrap event
      *
-     * @return array
+     * @param EventInterface $e event instance
+     * @return \DbuBackend\Module
      */
-    public function getConfig()
+    public function onBootstrap(EventInterface $e)
     {
-        return include __DIR__ . '/config/module.config.php';
+        /* @var $e \Zend\Mvc\MvcEvent */
+        $em = $e->getApplication()->getEventManager();
+        $em->attach(MvcEvent::EVENT_ROUTE, array($this, 'attachAuthPlugin'), 2);
+        return $this;
     }
 
     /**
-     * Class autoload config
+     * Attach controller plugin
      *
-     * @return array
+     * @param MvcEvent $e mvc event instance
+     * @return \DbuBackend\Module
      */
-    public function getAutoloaderConfig()
+    public function attachAuthPlugin(MvcEvent $e)
     {
-        return array(
-            'Zend\Loader\ClassMapAutoloader' => array(
-                __DIR__ . '/autoload_classmap.php',
-            ),
-            'Zend\Loader\StandardAutoloader' => array(
-                'namespaces' => array(
-                    __NAMESPACE__ => __DIR__ . '/src/' . __NAMESPACE__,
-                ),
-            ),
-        );
+        $app        = $e->getApplication();
+        $sm         = $app->getServiceManager();
+        $routeMatch = $sm->get('router')->match($sm->get('request'));
+        if (null !== $routeMatch) {
+            $app->getEventManager()->getSharedManager()->attach(
+                'abstract.backend.controller',
+                MvcEvent::EVENT_DISPATCH,
+                function($e) use ($sm) {
+                    /* @var $session \Zend\Session\SessionManager */
+                    $session = $sm->get('Zend\Session\SessionManager');
+                    $session->start();
+                    $container = new SessionContainer('initialized');
+                    if (!isset($container->init)) {
+                        $session->regenerateId(true);
+                        $container->init = 1;
+                    }
+                    $sm->get('ControllerPluginManager')
+                        ->get('DbuBackend\Controller\Plugin\Auth')
+                        ->setSessionContainer($container)
+                        ->doAuthorization($e);
+                }, 2
+            );
+        }
+
+        return $this;
     }
 
     /**
@@ -79,6 +109,51 @@ class Module implements
                     $cnf = isset($cnf[$cnfKey]['options']) ? $cnf[$cnfKey]['options'] : array();
                     return new Bcrypt($cnf);
                 },
+                'Zend\Session\SessionManager' => function($sm) {
+                    $cnf = $sm->get('Application')-> getConfig();
+                    if (isset($cnf['session'])) {
+                        $cnf = $cnf['session'];
+
+                        // init session config
+                        /* @var $sessionConfig \Zend\Session\Config\SessionConfig */
+                        $sessionConfig = null;
+                        if (isset($cnf['config'])) {
+                            $class = isset($cnf['config']['class'])
+                                ? $cnf['config']['class']
+                                : 'Zend\Session\Config\SessionConfig';
+                            $options = isset($cnf['config']['options']) ? $cnf['config']['options'] : array();
+                            $sessionConfig = new $class();
+                            $sessionConfig->setOptions($options);
+                        }
+
+                        // init session storage
+                        $sessionStorage = null;
+                        if (isset($cnf['storage'])) {
+                            $class = $cnf['storage'];
+                            $sessionStorage = new $class();
+                        }
+
+                        // init session save handler
+                        $sessionSaveHandler = null;
+                        if (isset($cnf['save_handler'])) {
+                            $sessionSaveHandler = $sm->get($cnf['save_handler']);
+                        }
+
+                        $sessionManager = new SessionManager($sessionConfig, $sessionStorage, $sessionSaveHandler);
+
+                        if (isset($cnf['validator'])) {
+                            $chain = $sessionManager->getValidatorChain();
+                            foreach ($cnf['validator'] as $validator) {
+                                $validator = new $validator();
+                                $chain->attach('session.validate', array($validator, 'isValid'));
+                            }
+                        }
+                    } else {
+                        $sessionManager = new SessionManager();
+                    }
+                    SessionContainer::setDefaultManager($sessionManager);
+                    return $sessionManager;
+                }
             ),
         );
     }
@@ -130,5 +205,34 @@ class Module implements
                        DbuBackend v0.1.0
 ==================================================================
 BANNER;
+    }
+
+    /**
+     * Configs
+     *
+     * @return array
+     */
+    public function getConfig()
+    {
+        return include __DIR__ . '/config/module.config.php';
+    }
+
+    /**
+     * Class autoload config
+     *
+     * @return array
+     */
+    public function getAutoloaderConfig()
+    {
+        return array(
+            'Zend\Loader\ClassMapAutoloader' => array(
+                __DIR__ . '/autoload_classmap.php',
+            ),
+            'Zend\Loader\StandardAutoloader' => array(
+                'namespaces' => array(
+                    __NAMESPACE__ => __DIR__ . '/src/' . __NAMESPACE__,
+                ),
+            ),
+        );
     }
 }

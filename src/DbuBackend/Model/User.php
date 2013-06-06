@@ -5,6 +5,7 @@ namespace DbuBackend\Model;
 use DbuBackend\Model\Exception;
 use DbuBackend\Model\UserResourceInterface;
 use Zend\Crypt\Password\PasswordInterface;
+use Zend\Permissions\Rbac\RoleInterface;
 
 class User
 {
@@ -27,6 +28,33 @@ class User
      * @var \Zend\Crypt\Password\PasswordInterface
      */
     protected $crypt;
+
+    /**
+     * @var \Zend\Permissions\Rbac\RoleInterface
+     */
+    protected $role;
+
+    /**
+     * Set RBAC role
+     *
+     * @param RoleInterface $role role
+     * @return \DbuBackend\Model\User
+     */
+    public function setRole(RoleInterface $role)
+    {
+        $this->role = $role;
+        return $this;
+    }
+
+    /**
+     * Get RBAC role
+     *
+     * @return RoleInterface
+     */
+    public function getRole()
+    {
+        return $this->role;
+    }
 
     /**
      * Set resource instance

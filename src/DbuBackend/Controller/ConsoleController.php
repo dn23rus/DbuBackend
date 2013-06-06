@@ -38,7 +38,6 @@ class ConsoleController extends AbstractActionController
          * @var $console \Zend\Console\Adapter\AbstractAdapter
          * @var $user \DbuBackend\Model\User
          */
-
         $pass = $this->getRequest()->getParam('pass');
         if (empty($pass)) {
             $console->writeLine('Password cannot be empty', Color::RED);
