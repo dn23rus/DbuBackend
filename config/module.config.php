@@ -19,7 +19,7 @@ return array(
             'login' => array(
                 'type' => 'segment',
                 'options' => array(
-                    'route' => '/login[/:action]',
+                    'route' => '/admin[/:action]',
                     'constraints' => array(
                         'action' => '[a-zA-Z][a-zA-Z0-9_-]*',
                     ),
