@@ -3,13 +3,14 @@
 namespace DbuBackend;
 
 use DbuBackend\Authentication\Adapter as AuthAdapter;
+use DbuBackend\Model\User;
 use Zend\Authentication\AuthenticationService;
 use Zend\Authentication\Storage\Session as SessionStorage;
 use Zend\ModuleManager\Feature\AutoloaderProviderInterface;
 use Zend\ModuleManager\Feature\ConfigProviderInterface;
 use Zend\ModuleManager\Feature\ServiceProviderInterface;
+use Zend\Session\Container as SessionContainer;
 use Zend\Session\SessionManager;
-
 
 class Module implements
     AutoloaderProviderInterface,
@@ -28,8 +29,11 @@ class Module implements
     {
         return array(
             'factories' => array(
+                'DbuBackend\Model\User' => function($sm) {
+                    return new User();
+                },
                 'Zend\Authentication\AuthenticationService' => function($sm) {
-                    $storage = new SessionStorage('backend', null, $$sm->get('Zend\Session\SessionManager'));
+                    $storage = new SessionStorage('backend', null, $sm->get('Zend\Session\SessionManager'));
                     $adapter = new AuthAdapter();
                     return new AuthenticationService($storage, $adapter);
                 },

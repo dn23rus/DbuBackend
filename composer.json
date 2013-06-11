@@ -3,7 +3,8 @@
     "description": "zf2 backend module",
     "require": {
         "php": ">=5.3.3",
-        "zendframework/zendframework": "2.*"
+        "zendframework/zendframework": "2.*",
+        "doctrine/common": ">=2.1"
     },
     "autoload": {
         "psr-0": {

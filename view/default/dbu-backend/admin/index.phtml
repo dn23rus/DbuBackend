@@ -1,1 +1,40 @@
-index.phtml
+<?php
+/**
+ * @var $form \Zend\Form\Form
+ * @var $formLabel \Zend\Form\View\Helper\FormLabel
+ */
+$form->prepare();
+
+$form->setAttribute('action', $this->url('login', array('action' => 'login')));
+$form->setAttribute('method', 'post');
+
+$formLabel = $this->plugin('formLabel');
+
+$name = $form->get('name');
+$pass = $form->get('password');
+?>
+
+<h2><?=  $this->translate($form->getName()) ?></h2>
+
+<?= $this->form()->openTag($form) ?>
+
+<div class="form_element">
+    <?= $formLabel->openTag($name) . $this->translate($name->getOption('label')) . $formLabel->closeTag() ?>
+
+    <?= $this->formInput($name) ?>
+
+    <?= $this->formElementErrors($name) ?>
+</div>
+<div class="form_element">
+    <?= $formLabel->openTag($pass) .  $this->translate($pass->getOption('label')) . $formLabel->closeTag() ?>
+
+    <?= $this->formInput($pass) ?>
+
+    <?= $this->formElementErrors($pass) ?>
+</div>
+<?= $this->formInput($form->get('security')) ?>
+
+<?= $this->formInput($form->get('send')) ?>
+
+<?= $this->form()->closeTag() ?>
+
