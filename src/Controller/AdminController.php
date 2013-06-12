@@ -7,13 +7,23 @@ use Zend\View\Model\ViewModel;
 
 class AdminController extends AbstractActionController
 {
+    /**
+     * Index action
+     *
+     * @return array|ViewModel
+     */
     public function indexAction()
     {
         return new ViewModel(array(
-            'form' => $this->getServiceLocator()->get('DbuBackend\Model\User')->getInputForm()
+            'form' => $this->getServiceLocator()->get('DbuBackend\Form\AdminLogin'),
         ));
     }
 
+    /**
+     * Login action
+     *
+     * @return void
+     */
     public function loginAction()
     {
         /* @var $request \Zend\Http\PhpEnvironment\Request */
@@ -37,12 +47,22 @@ class AdminController extends AbstractActionController
         }
     }
 
+    /**
+     * Logout action
+     *
+     * @return void
+     */
     public function logoutAction()
     {
         $this->getServiceLocator()->get('Zend\Authentication\AuthenticationService')->clearIdentity();
         // @todo redirect
     }
 
+    /**
+     * Forbid action
+     *
+     * @return array|ViewModel
+     */
     public function forbidAction()
     {
 

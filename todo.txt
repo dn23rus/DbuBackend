@@ -1,0 +1,6 @@
+use DbuCore module
+implement DbuCore\AbstractModel
+implement DbuCore\AbstractForm
+    create initializer for set translator
+
+add validators to login form

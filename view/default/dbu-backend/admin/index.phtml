@@ -6,12 +6,13 @@
 $form->prepare();
 
 $form->setAttribute('action', $this->url('login', array('action' => 'login')));
-$form->setAttribute('method', 'post');
 
 $formLabel = $this->plugin('formLabel');
 
 $name = $form->get('name');
 $pass = $form->get('password');
+$send = $form->get('send');
+$send->setValue($this->translate($send->getValue()));
 ?>
 
 <h2><?=  $this->translate($form->getName()) ?></h2>
@@ -19,14 +20,14 @@ $pass = $form->get('password');
 <?= $this->form()->openTag($form) ?>
 
 <div class="form_element">
-    <?= $formLabel->openTag($name) . $this->translate($name->getOption('label')) . $formLabel->closeTag() ?>
+    <?= $formLabel->openTag($name) .  $this->translate($name->getOption('label')) . $formLabel->closeTag() ?>
 
     <?= $this->formInput($name) ?>
 
     <?= $this->formElementErrors($name) ?>
 </div>
 <div class="form_element">
-    <?= $formLabel->openTag($pass) .  $this->translate($pass->getOption('label')) . $formLabel->closeTag() ?>
+    <?= $formLabel->openTag($pass) .   $this->translate($pass->getOption('label')) . $formLabel->closeTag() ?>
 
     <?= $this->formInput($pass) ?>
 
@@ -34,7 +35,7 @@ $pass = $form->get('password');
 </div>
 <?= $this->formInput($form->get('security')) ?>
 
-<?= $this->formInput($form->get('send')) ?>
+<?= $this->formInput($send) ?>
 
 <?= $this->form()->closeTag() ?>
 

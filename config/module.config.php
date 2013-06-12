@@ -5,6 +5,14 @@ return array(
             'DbuBackend\Controller\Admin' => 'DbuBackend\Controller\AdminController',
         ),
     ),
+    'service_manager' => array(
+        'invokables' => array(
+            'DbuBackend\Form\AdminLogin' => 'DbuBackend\Form\AdminLogin',
+        ),
+        'shared' => array(
+            'DbuBackend\Model\User' => false,
+        ),
+    ),
     'router' => array(
         'routes' => array(
             'login' => array(
